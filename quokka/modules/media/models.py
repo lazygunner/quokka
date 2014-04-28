@@ -5,6 +5,7 @@ from quokka.core.db import db
 from quokka.core.models import Content, Channel
 from flask.ext.admin import form
 from .controller import MediaController
+from quokka.core.admin.utils import _l
 
 logger = logging.getLogger()
 
@@ -13,9 +14,9 @@ class Media(MediaController, Content):
 
     DEFAULT_CHANNEL = "media"
 
-    path = db.StringField()
-    embed = db.StringField()
-    link = db.StringField()
+    path = db.StringField(verbose_name=_l('Path'))
+    embed = db.StringField(verbose_name=_l('Embed'))
+    link = db.StringField(verbose_name=_l('Link'))
 
     meta = {
         'allow_inheritance': True
@@ -52,4 +53,4 @@ class Audio(Media):
 
 
 class MediaGallery(Content):
-    body = db.StringField(required=False)
+    body = db.StringField(required=False, verbose_name=_l('Media Gallery'))

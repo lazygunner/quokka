@@ -1,6 +1,6 @@
 # coding: utf -8
 
-from flask.ext.admin.babel import gettext, ngettext, lazy_gettext
+from flask.ext.babel import gettext, ngettext, lazy_gettext
 
 
 def _(*args, **kwargs):

@@ -27,24 +27,25 @@ logger = logging.getLogger()
 class ContentFormat(object):
     content_format = db.StringField(
         choices=TEXT_FORMATS,
-        default="html"  # TODO: Find a way to set default form settings
+        default="html",  # TODO: Find a way to set default form settings
+        verbose_name=_l('Content Format')
     )
 
 
 class Dated(object):
-    available_at = db.DateTimeField(default=datetime.datetime.now)
-    available_until = db.DateTimeField(required=False)
-    created_at = db.DateTimeField(default=datetime.datetime.now)
-    updated_at = db.DateTimeField(default=datetime.datetime.now)
+    available_at = db.DateTimeField(default=datetime.datetime.now, verbose_name=_l('Available At'))
+    available_until = db.DateTimeField(required=False, verbose_name=_l('Available Until'))
+    created_at = db.DateTimeField(default=datetime.datetime.now, verbose_name=_l('Created At'))
+    updated_at = db.DateTimeField(default=datetime.datetime.now, verbose_name=_l('Updated At'))
 
 
 class Owned(object):
-    created_by = db.ReferenceField(User)
-    last_updated_by = db.ReferenceField(User)
+    created_by = db.ReferenceField(User, verbose_name=_l('Created By'))
+    last_updated_by = db.ReferenceField(User, verbose_name=_l('Last Updated By'))
 
 
 class Publishable(Dated, Owned):
-    published = db.BooleanField(default=False)
+    published = db.BooleanField(default=False, verbose_name=_l('Published'))
 
     def save(self, *args, **kwargs):
         self.updated_at = datetime.datetime.now()
@@ -58,7 +59,7 @@ class Publishable(Dated, Owned):
 
 
 class Slugged(object):
-    slug = db.StringField(max_length=255, required=True)
+    slug = db.StringField(max_length=255, required=True, verbose_name=_l('Slug'))
 
     def validate_slug(self, title=None):
         if self.slug:
@@ -68,7 +69,7 @@ class Slugged(object):
 
 
 class LongSlugged(Slugged):
-    long_slug = db.StringField(unique=True, required=True)
+    long_slug = db.StringField(unique=True, required=True, verbose_name=_l('Long Slug'))
     mpath = db.StringField()
 
     def _create_mpath_long_slug(self):
@@ -109,7 +110,7 @@ class LongSlugged(Slugged):
 
 
 class Tagged(object):
-    tags = db.ListField(db.StringField(max_length=50))
+    tags = db.ListField(db.StringField(max_length=50), verbose_name=_l('Tags'))
 
 
 class CustomValue(db.EmbeddedDocument):
@@ -167,7 +168,7 @@ class CustomValue(db.EmbeddedDocument):
 
 
 class HasCustomValue(object):
-    values = db.ListField(db.EmbeddedDocumentField(CustomValue))
+    values = db.ListField(db.EmbeddedDocumentField(CustomValue), verbose_name=_l('Values'))
 
     def get_values_tuple(self):
         return [(value.name, value.value, value.formatter)
@@ -183,11 +184,11 @@ class HasCustomValue(object):
 
 
 class Ordered(object):
-    order = db.IntField(required=True, default=1)
+    order = db.IntField(required=True, default=1, verbose_name=_l('Order'))
 
 
 class ChannelConfigs(object):
-    content_filters = db.DictField(required=False, default=lambda: {})
+    content_filters = db.DictField(required=False, default=lambda: {}, verbose_name=_l('Content Filter'))
     inherit_parent = db.BooleanField(default=True)
 
 
@@ -206,7 +207,8 @@ class ChannelType(TemplateType, ChannelConfigs, db.DynamicDocument):
 
 
 class ContentProxy(db.DynamicDocument):
-    content = db.GenericReferenceField(required=True, unique=True)
+    content = db.GenericReferenceField(required=True, unique=True,
+                                       verbose_name=_l('Content'))
 
     def __unicode__(self):
         return self.content.title
@@ -214,28 +216,37 @@ class ContentProxy(db.DynamicDocument):
 
 class Channel(Tagged, HasCustomValue, Publishable, LongSlugged,
               ChannelConfigs, ContentFormat, db.DynamicDocument):
-    title = db.StringField(max_length=255, required=True)
-    description = db.StringField()
-    show_in_menu = db.BooleanField(default=False)
-    is_homepage = db.BooleanField(default=False)
-    include_in_rss = db.BooleanField(default=True)
-    indexable = db.BooleanField(default=True)
-    canonical_url = db.StringField()
-    order = db.IntField(default=0)
+    title = db.StringField(max_length=255, required=True,
+                           verbose_name=_l('Title'))
+    description = db.StringField(verbose_name=_l('Description'))
+    show_in_menu = db.BooleanField(default=False,
+                                   verbose_name=_l('Show in Menu'))
+    is_homepage = db.BooleanField(default=False,
+                                  verbose_name=_l('Is Homepage'))
+    include_in_rss = db.BooleanField(default=True,
+                                     verbose_name=_l('Include in RSS'))
+    indexable = db.BooleanField(default=True, verbose_name=_l('Indexable'))
+    canonical_url = db.StringField(verbose_name=_l('Canonical URL'))
+    order = db.IntField(default=0, verbose_name=_l('Order'))
 
     parent = db.ReferenceField('self', required=False, default=None,
-                               reverse_delete_rule=db.DENY)
+                               reverse_delete_rule=db.DENY,
+                               verbose_name=_l('Parent'))
 
-    per_page = db.IntField(default=0)
-    aliases = db.ListField(db.StringField(), default=[])
+    per_page = db.IntField(default=0, verbose_name=_l('Per Page'))
+    aliases = db.ListField(db.StringField(), default=[],
+                           verbose_name=_l('Aliases'))
     channel_type = db.ReferenceField(ChannelType, required=False,
-                                     reverse_delete_rule=db.NULLIFY)
+                                     reverse_delete_rule=db.NULLIFY,
+                                     verbose_name=_l('Channel Type'))
 
-    redirect_url = db.StringField(max_length=255)
+    redirect_url = db.StringField(max_length=255, verbose_name=_l('Redirect URL'))
     render_content = db.ReferenceField(ContentProxy,
                                        required=False,
-                                       reverse_delete_rule=db.NULLIFY)
-    sort_by = db.ListField(db.StringField(), default=[])
+                                       reverse_delete_rule=db.NULLIFY,
+                                       verbose_name=_l('Render Content'))
+    sort_by = db.ListField(db.StringField(), default=[],
+                           verbose_name=_l('Sort By'))
 
     meta = {
         'ordering': ['order', 'title']
@@ -370,21 +381,25 @@ class Channel(Tagged, HasCustomValue, Publishable, LongSlugged,
 
 class Channeling(object):
     channel = db.ReferenceField(Channel, required=True,
-                                reverse_delete_rule=db.DENY)
+                                reverse_delete_rule=db.DENY,
+                                verbose_name=_l('Channel'))
     related_channels = db.ListField(
-        db.ReferenceField('Channel', reverse_delete_rule=db.PULL)
+        db.ReferenceField('Channel', reverse_delete_rule=db.PULL),
+        verbose_name=_l('Related Channels')
     )
-    show_on_channel = db.BooleanField(default=True)
+    show_on_channel = db.BooleanField(default=True,
+                                      verbose_name=_l('Show On Channel'))
 
 
 class ChannelingNotRequired(Channeling):
     channel = db.ReferenceField(Channel, required=False,
-                                reverse_delete_rule=db.NULLIFY)
+                                reverse_delete_rule=db.NULLIFY,
+                                verbose_name=_l('Channel'))
 
 
 class Config(HasCustomValue, ContentFormat, Publishable, db.DynamicDocument):
-    group = db.StringField(max_length=255)
-    description = db.StringField()
+    group = db.StringField(max_length=255, verbose_name=_l('Group'))
+    description = db.StringField(verbose_name=_l('Description'))
 
     @classmethod
     def get(cls, group, name=None, default=None):
@@ -437,9 +452,9 @@ class ContentTemplateType(TemplateType, db.Document):
 
 
 class SubContentPurpose(db.Document):
-    title = db.StringField(max_length=255, required=True)
-    identifier = db.StringField(max_length=255, required=True, unique=True)
-    module = db.StringField()
+    title = db.StringField(max_length=255, required=True, verbose_name=_l('Title'))
+    identifier = db.StringField(max_length=255, required=True, unique=True, verbose_name=_l('Identifier'))
+    module = db.StringField(verbose_name=_l('Module'))
 
     def save(self, *args, **kwargs):
         self.identifier = slugify(self.identifier or self.title)
@@ -455,10 +470,10 @@ class SubContent(Publishable, Ordered, db.EmbeddedDocument):
     Images, ImageGalleries, RelatedContent, Attachments, Media
     """
 
-    content = db.ReferenceField('Content', required=True)
-    caption = db.StringField()
-    purpose = db.ReferenceField(SubContentPurpose, required=True)
-    identifier = db.StringField()
+    content = db.ReferenceField('Content', required=True, verbose_name=_l('Content'))
+    caption = db.StringField(verbose_name=_l('Caption'))
+    purpose = db.ReferenceField(SubContentPurpose, required=True, verbose_name=_l('Purpose'))
+    identifier = db.StringField(verbose_name=_l('Identifier'))
 
     @property
     def thumb(self):
@@ -488,14 +503,15 @@ class SubContent(Publishable, Ordered, db.EmbeddedDocument):
 
 class Content(HasCustomValue, Publishable, LongSlugged,
               Channeling, Tagged, ContentFormat, db.DynamicDocument):
-    title = db.StringField(max_length=255, required=True)
-    summary = db.StringField(required=False)
+    title = db.StringField(max_length=255, required=True, verbose_name=_l('Title'))
+    summary = db.StringField(required=False, verbose_name=_l('Summary'))
     template_type = db.ReferenceField(ContentTemplateType,
                                       required=False,
-                                      reverse_delete_rule=db.NULLIFY)
-    contents = db.ListField(db.EmbeddedDocumentField(SubContent))
-    model = db.StringField()
-    comments_enabled = db.BooleanField(default=True)
+                                      reverse_delete_rule=db.NULLIFY,
+                                      verbose_name=_l('Template Type'))
+    contents = db.ListField(db.EmbeddedDocumentField(SubContent), verbose_name=_l('Contents'))
+    model = db.StringField(verbose_name=_l('Model'))
+    comments_enabled = db.BooleanField(default=True, verbose_name=_l('Comments Enabled'))
 
     meta = {
         'allow_inheritance': True,
@@ -609,4 +625,4 @@ class Content(HasCustomValue, Publishable, LongSlugged,
 
 
 class Link(Content):
-    link = db.StringField(required=True)
+    link = db.StringField(required=True, verbose_name=_l('Link'))

@@ -4,12 +4,13 @@
 from quokka.core.db import db
 from flask.ext.security import UserMixin, RoleMixin
 from flask.ext.security.utils import encrypt_password
-
+from quokka.core.admin.utils import _l
 
 # Auth
 class Role(db.Document, RoleMixin):
-    name = db.StringField(max_length=80, unique=True)
-    description = db.StringField(max_length=255)
+    name = db.StringField(max_length=80, unique=True, verbose_name=_l('Name'))
+    description = db.StringField(max_length=255,
+                                 verbose_name=_l('Description'))
 
     @classmethod
     def createrole(cls, name, description=None):
@@ -23,25 +24,32 @@ class Role(db.Document, RoleMixin):
 
 
 class User(db.DynamicDocument, UserMixin):
-    name = db.StringField(max_length=255)
-    email = db.EmailField(max_length=255, unique=True)
-    password = db.StringField(max_length=255)
-    active = db.BooleanField(default=True)
-    confirmed_at = db.DateTimeField()
+    name = db.StringField(max_length=255, verbose_name=_l('Name'))
+    email = db.EmailField(max_length=255, unique=True,
+                          verbose_name=_l('Email'))
+    password = db.StringField(max_length=255, verbose_name=_l('Password'))
+    active = db.BooleanField(default=True, verbose_name=_l('Active'))
+    confirmed_at = db.DateTimeField(verbose_name=_l('Confirmed At'))
     roles = db.ListField(
-        db.ReferenceField(Role, reverse_delete_rule=db.DENY), default=[]
+        db.ReferenceField(Role, reverse_delete_rule=db.DENY), default=[],
+        verbose_name=_l('Roles')
     )
 
-    last_login_at = db.DateTimeField()
-    current_login_at = db.DateTimeField()
-    last_login_ip = db.StringField(max_length=255)
-    current_login_ip = db.StringField(max_length=255)
-    login_count = db.IntField()
+    last_login_at = db.DateTimeField(verbose_name=_l('Last Login At'))
+    current_login_at = db.DateTimeField(verbose_name=_l('Current Login At'))
+    last_login_ip = db.StringField(max_length=255,
+                                   verbose_name=_l('Last Login Ip'))
+    current_login_ip = db.StringField(max_length=255,
+                                      verbose_name=_l('Current Login Ip'))
+    login_count = db.IntField(verbose_name=_l('Login Count'))
 
-    username = db.StringField(max_length=50, required=False, unique=True)
+    username = db.StringField(max_length=50, required=False, unique=True,
+                              verbose_name=_l('Username'))
 
-    remember_token = db.StringField(max_length=255)
-    authentication_token = db.StringField(max_length=255)
+    remember_token = db.StringField(max_length=255,
+                                    verbose_name=_l('Remember Token'))
+    authentication_token = db.StringField(max_length=255,
+                                    verbose_name=_l('Authentication Tokern'))
 
     def clean(self, *args, **kwargs):
         if not self.username:
@@ -91,16 +99,21 @@ class User(db.DynamicDocument, UserMixin):
 
 
 class Connection(db.Document):
-    user_id = db.ObjectIdField()
-    provider_id = db.StringField(max_length=255)
-    provider_user_id = db.StringField(max_length=255)
-    access_token = db.StringField(max_length=255)
-    secret = db.StringField(max_length=255)
-    display_name = db.StringField(max_length=255)
-    full_name = db.StringField(max_length=255)
-    profile_url = db.StringField(max_length=512)
-    image_url = db.StringField(max_length=512)
-    rank = db.IntField(default=1)
+    user_id = db.ObjectIdField(verbose_name=_l('Connection'))
+    provider_id = db.StringField(max_length=255,
+                                 verbose_name=_l('Provider ID'))
+    provider_user_id = db.StringField(max_length=255,
+                                      verbose_name=_l('Provider User ID'))
+    access_token = db.StringField(max_length=255, 
+                                  verbose_name=_l('Access Token'))
+    secret = db.StringField(max_length=255, verbose_name=_l('Secret'))
+    display_name = db.StringField(max_length=255,
+                                  verbose_name=_l('Display Name'))
+    full_name = db.StringField(max_length=255, verbose_name=_l('Full Name'))
+    profile_url = db.StringField(max_length=512,
+                                 verbose_name=_l('Profile URL'))
+    image_url = db.StringField(max_length=512, verbose_name=_l('Image URL'))
+    rank = db.IntField(default=1, verbose_name=_l('Rank'))
 
     @property
     def user(self):
