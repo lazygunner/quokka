@@ -220,11 +220,11 @@ class Channel(Tagged, HasCustomValue, Publishable, LongSlugged,
                            verbose_name=_l('Title'))
     description = db.StringField(verbose_name=_l('Description'))
     show_in_menu = db.BooleanField(default=False,
-                                   verbose_name=_l('Show in Menu'))
+                                   verbose_name=_l('Show In Menu'))
     is_homepage = db.BooleanField(default=False,
                                   verbose_name=_l('Is Homepage'))
     include_in_rss = db.BooleanField(default=True,
-                                     verbose_name=_l('Include in RSS'))
+                                     verbose_name=_l('Include In RSS'))
     indexable = db.BooleanField(default=True, verbose_name=_l('Indexable'))
     canonical_url = db.StringField(verbose_name=_l('Canonical URL'))
     order = db.IntField(default=0, verbose_name=_l('Order'))

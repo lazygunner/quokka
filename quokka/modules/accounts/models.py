@@ -38,9 +38,9 @@ class User(db.DynamicDocument, UserMixin):
     last_login_at = db.DateTimeField(verbose_name=_l('Last Login At'))
     current_login_at = db.DateTimeField(verbose_name=_l('Current Login At'))
     last_login_ip = db.StringField(max_length=255,
-                                   verbose_name=_l('Last Login Ip'))
+                                   verbose_name=_l('Last Login IP'))
     current_login_ip = db.StringField(max_length=255,
-                                      verbose_name=_l('Current Login Ip'))
+                                      verbose_name=_l('Current Login IP'))
     login_count = db.IntField(verbose_name=_l('Login Count'))
 
     username = db.StringField(max_length=50, required=False, unique=True,
